@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wild Rift Solo Q Challenge</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050d18;color:#eef8ff;font-family:Inter,system-ui,Arial}
+header{padding:34px 18px;text-align:center;background:linear-gradient(180deg,#0b2138,#050d18);border-bottom:1px solid #1a3852}
+.logo{color:#55ddff;font-weight:900;letter-spacing:3px}.title{font-size:clamp(32px,7vw,58px);font-weight:950;margin:8px 0}.sub{color:#8fa9bf}
+main{max-width:1100px;margin:auto;padding:22px 16px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#0a1828;border:1px solid #193750;border-radius:17px;padding:16px}.card b{font-size:27px;display:block}.muted{color:#8da6bb;font-size:12px}
+.panel{margin-top:18px;background:#0a1828;border:1px solid #193750;border-radius:17px;overflow:hidden}.scroll{overflow:auto}table{width:100%;min-width:750px;border-collapse:collapse}th,td{padding:14px;border-bottom:1px solid #173149;text-align:left}th{font-size:11px;color:#8da6bb;text-transform:uppercase}tr:last-child td{border:0}.rank{color:#55ddff;font-weight:900}.shields{display:flex;gap:5px}.shield{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#0788d0,#66eaff);box-shadow:0 0 14px #20baff55}.off{background:#182b3d;color:#536b80;box-shadow:none}.rules{padding:18px;line-height:1.55}.rules li{margin:6px 0}footer{text-align:center;color:#5b748b;padding:28px;font-size:12px}@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<header><div class="logo">WILD RIFT SOLO Q CHALLENGE</div><div class="title">🐢 BLUE SHELL</div><div class="sub">Clasificación pública · 300 partidas · Solo Q</div></header>
+<main>
+<section class="grid"><div class="card"><b id="players">—</b><span class="muted">PARTICIPANTES</span></div><div class="card"><b id="games">—</b><span class="muted">PARTIDAS REGISTRADAS</span></div><div class="card"><b id="shells">—</b><span class="muted">SHELLS ACTIVAS</span></div><div class="card"><b>300</b><span class="muted">PARTIDAS POR JUGADOR</span></div></section>
+<section class="panel scroll"><table><thead><tr><th>#</th><th>Jugador</th><th>Partidas</th><th>Victorias</th><th>Winrate</th><th>Rango</th><th>Blue Shells</th></tr></thead><tbody id="rows"></tbody></table></section>
+<section class="panel rules"><h3>📜 Reglas</h3><ul>
+<li>300 partidas de Solo Q y máximo 10 partidas por día.</li>
+<li>Prohibido jugar acompañado o hacer deranking/manipulación de MMR.</li>
+<li>Cada jugador puede tener hasta 3 Blue Shells.</li>
+<li>Las Shells se obtienen mediante hitos definidos por la organización.</li>
+<li>Una Shell puede lanzarse a otro participante y genera una penalización para su siguiente partida.</li>
+<li>Los hitos y penalizaciones están adaptados a Wild Rift y deben poder verificarse.</li>
+<li>Abandonar voluntariamente el Challenge supone la eliminación.</li>
+</ul></section>
+</main><footer>Challenge comunitario no oficial de Riot Games.</footer>
+<script>
+async function load(){
+ try{
+  const r=await fetch('/api/leaderboard'); const d=await r.json();
+  players.textContent=d.players.length; games.textContent=d.players.reduce((a,p)=>a+p.games,0); shells.textContent=d.players.reduce((a,p)=>a+p.shells,0);
+  rows.innerHTML=d.players.sort((a,b)=>b.wins-a.wins).map((p,i)=>{
+   let sh=[0,1,2].map(x=>`<span class="shield ${x<p.shells?'':'off'}">🐢</span>`).join('');
+   let wr=p.games?((p.wins/p.games)*100).toFixed(1)+'%':'—';
+   return `<tr><td class="rank">${i+1}</td><td><b>${esc(p.name)}</b></td><td>${p.games}</td><td>${p.wins}</td><td>${wr}</td><td>${esc(p.rank||'—')}</td><td><div class="shields">${sh}</div></td></tr>`
+  }).join('');
+ }catch(e){rows.innerHTML='<tr><td colspan="7">Configura la base de datos para mostrar el ranking.</td></tr>'}
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+load();setInterval(load,15000);
+</script></body></html>
